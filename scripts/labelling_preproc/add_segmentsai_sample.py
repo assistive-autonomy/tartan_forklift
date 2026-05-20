@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """Module to create/upload a multi-sensor sequence to Segments.ai."""
+
 import copy
 import json
 import sys

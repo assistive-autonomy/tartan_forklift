@@ -9,9 +9,9 @@ BASH_CMD=()
 # Default cyclone_dds.xml path
 CYCLONE_DIR=~/cyclone_dds.xml
 # Default rosbags directory
-ROSBAGS_DIR=/mnt/vdb/data
+ROSBAGS_DIR=/mnt/data
 # Default export directory
-EXPORTS_OUTPUT_DIR=/mnt/vdb/exported_data
+EXPORTS_OUTPUT_DIR=/mnt/exported_data
 
 # Function to print usage
 usage() {

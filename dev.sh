@@ -8,9 +8,9 @@ CYCLONE_VOL=""
 # Default cyclone_dds.xml path
 CYCLONE_DIR=~/cyclone_dds.xml
 # Default in-vehicle rosbags directory
-ROSBAGS_DIR=/mnt/vdb/data
+ROSBAGS_DIR=/mnt/data
 # Default in-cloud exports directory
-EXPORTS_OUTPUT_DIR=/mnt/vdb/exported_data
+EXPORTS_OUTPUT_DIR=/mnt/exported_data
 
 # Function to print usage
 usage() {

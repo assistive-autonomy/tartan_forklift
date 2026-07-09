@@ -9,7 +9,7 @@ BASH_CMD=()
 # Default cyclone_dds.xml path
 CYCLONE_DIR=~/cyclone_dds.xml
 # Default rosbags directory
-ROSBAGS_DIR=/mnt/data
+ROSBAGS_DIR=/mnt/data/jazzy_data
 # Default export directory
 EXPORTS_OUTPUT_DIR=/mnt/exported_data
 

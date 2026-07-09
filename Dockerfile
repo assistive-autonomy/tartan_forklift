@@ -1,12 +1,20 @@
-FROM ros:humble-ros-base-jammy AS base
+FROM ros:jazzy-ros-base-noble AS base
+
+# Install key dependencies
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive \
+    apt-get -y --quiet --no-install-recommends install \
+        python3-pip \
+        python3-pandas python3-colorama python3-scipy python3-watchdog python3-colorlog python3-numpy python3-boto3 python3-colcon-core python3-setuptools \
+    && pip install --break-system-packages --no-cache-dir mcap segments-ai awscli \
+    # && pip install --break-system-packages --no-cache-dir --upgrade pip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install key dependencies
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
     apt-get -y --quiet --no-install-recommends install \
         ros-"$ROS_DISTRO"-can-msgs \
-        ros-"$ROS_DISTRO"-dataspeed-ulc-msgs \
-        ros-"$ROS_DISTRO"-dbw-ford-msgs \
         ros-"$ROS_DISTRO"-ffmpeg-image-transport \
         ros-"$ROS_DISTRO"-flir-camera-msgs \
         ros-"$ROS_DISTRO"-gps-msgs \
@@ -16,7 +24,6 @@ RUN apt-get update \
         ros-"$ROS_DISTRO"-microstrain-inertial-msgs \
         ros-"$ROS_DISTRO"-nmea-msgs \
         ros-"$ROS_DISTRO"-novatel-gps-msgs \
-        ros-"$ROS_DISTRO"-ouster-msgs \
         ros-"$ROS_DISTRO"-radar-msgs \
         ros-"$ROS_DISTRO"-rosbag2-storage-mcap \
         ros-"$ROS_DISTRO"-velodyne-msgs \
@@ -30,9 +37,9 @@ RUN apt-get update \
         wget \
         # Install Zenoh ROS2 RMW
         ros-"$ROS_DISTRO"-rmw-zenoh-cpp \
-    && pip install --no-cache-dir mcap pandas colorama \
-       segments-ai awscli boto3 scipy watchdog colorlog \
-    && pip install --no-cache-dir --upgrade setuptools pip \
+    # && pip install --break-system-packages --no-cache-dir mcap pandas colorama \
+    #   segments-ai awscli boto3 scipy watchdog colorlog \
+    # && pip install --break-system-packages --no-cache-dir --upgrade setuptools colcon-core pip \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup ROS workspace folder
@@ -66,6 +73,14 @@ RUN groupadd -g $GROUP_ID $USERNAME && \
     usermod -aG sudo $USERNAME && \
     echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
+# Clone Humble Dataspeed repos, to be compiled in Jazzy
+RUN git clone https://bitbucket.org/DataspeedInc/dbw_ros.git /opt/dbw_ros
+
+# Move to src only necessary pkgs
+RUN mkdir -p $DEP_WS/src \
+ && mv /opt/dbw_ros/dbw1/dataspeed_ulc_msgs $DEP_WS/src/ \
+ && mv /opt/dbw_ros/dbw1/dbw_ford_msgs $DEP_WS/src/
+
 # Setup tartan_rosbag_exporter
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
@@ -81,11 +96,10 @@ RUN apt-get update \
        ros-"$ROS_DISTRO"-rosbag2-cpp \
        ros-"$ROS_DISTRO"-rosbag2-storage \
        ros-"$ROS_DISTRO"-sensor-msgs \
-    && pip install --no-cache-dir mcap colorama \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p "$ROS_WS"/src \
-    && wget -q -O /tmp/exporter.tar.gz "https://github.com/ipab-rad/tartan_rosbag_exporter/archive/refs/tags/2.0.0.tar.gz" \
+    && wget -q -O /tmp/exporter.tar.gz "https://github.com/assistive-autonomy/tartan_rosbag_exporter/archive/refs/tags/3.0.0.tar.gz" \
     && tar -xzf /tmp/exporter.tar.gz -C "$ROS_WS"/src \
     && . /opt/ros/"$ROS_DISTRO"/setup.sh \
     && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
@@ -104,7 +118,7 @@ FROM base AS prebuilt
 WORKDIR $ROS_WS
 
 # Install Python packages into system-wide location
-RUN pip install --no-cache-dir \
+RUN pip install --break-system-packages --no-cache-dir \
     --target=/usr/local/lib/python3.10/site-packages ./scripts
 
 # -----------------------------------------------------------------------
